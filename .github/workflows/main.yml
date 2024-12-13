@@ -81,20 +81,17 @@ jobs:
         # Download the wallpaper
         Invoke-WebRequest -Uri $imageUrl -OutFile $wallpaperPath
 
-        # Set the wallpaper using registry and refresh the desktop
-        function Set-Wallpaper {
-            param([string]$path)
-            Add-Type -TypeDefinition @"
-            using System;
-            using System.Runtime.InteropServices;
-            public class Wallpaper {
-                [DllImport("user32.dll", CharSet = CharSet.Auto)]
-                public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-            }
-"@
-            [Wallpaper]::SystemParametersInfo(20, 0, $path, 0x01 -bor 0x02)
+        # Set the wallpaper using the SystemParametersInfo function
+        Add-Type -TypeDefinition @"
+        using System;
+        using System.Runtime.InteropServices;
+        public class Wallpaper {
+            [DllImport("user32.dll", CharSet = CharSet.Auto)]
+            public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
         }
-        Set-Wallpaper -path $wallpaperPath
+"@
+
+        [Wallpaper]::SystemParametersInfo(20, 0, $wallpaperPath, 0x01 -bor 0x02)
 
     - name: Start Remote Desktop Session
       continue-on-error: true
