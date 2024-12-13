@@ -81,17 +81,11 @@ jobs:
         # Download the wallpaper
         Invoke-WebRequest -Uri $imageUrl -OutFile $wallpaperPath
 
-        # Set the wallpaper using the SystemParametersInfo function
-        Add-Type -TypeDefinition @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class Wallpaper {
-            [DllImport("user32.dll", CharSet = CharSet.Auto)]
-            public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-        }
-"@
+        # Set the wallpaper using the registry
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name Wallpaper -Value $wallpaperPath
 
-        [Wallpaper]::SystemParametersInfo(20, 0, $wallpaperPath, 0x01 -bor 0x02)
+        # Refresh the desktop to apply the wallpaper
+        RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters
 
     - name: Start Remote Desktop Session
       continue-on-error: true
