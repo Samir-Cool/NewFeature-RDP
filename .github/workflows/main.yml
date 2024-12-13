@@ -55,44 +55,6 @@ jobs:
           exit 1
         }
 
-    - name: Set Wallpaper from URL
-      run: |
-        $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
-        $localPath = "$env:USERPROFILE\Pictures\wallpaper.jpg"
-        
-        # Ensure no conflicts by adding a delay
-        Write-Host "Waiting for a few seconds before updating wallpaper..."
-        Start-Sleep -Seconds 10  # Add a short wait to avoid conflicts
-        
-        # Delete the old wallpaper file if it exists
-        if (Test-Path $localPath) {
-            Write-Host "Removing existing wallpaper file..."
-            Remove-Item $localPath -Force
-        }
-
-        # Download the wallpaper image
-        Write-Host "Downloading wallpaper image from $wallpaperUrl..."
-        Invoke-WebRequest -Uri $wallpaperUrl -OutFile $localPath
-
-        # Check if the image file exists
-        if (Test-Path $localPath) {
-            Write-Host "Wallpaper downloaded successfully: $localPath"
-        } else {
-            Write-Host "Failed to download wallpaper."
-            exit 1
-        }
-
-        # Set the wallpaper using registry settings
-        $regPath = "HKCU:\Control Panel\Desktop"
-        Write-Host "Setting wallpaper..."
-        Set-ItemProperty -Path $regPath -Name "Wallpaper" -Value $localPath
-        Set-ItemProperty -Path $regPath -Name "WallpaperStyle" -Value 10  # 10 = Fill
-        Set-ItemProperty -Path $regPath -Name "TileWallpaper" -Value 0
-
-        # Force refresh of the system to apply the new wallpaper
-        Write-Host "Applying new wallpaper..."
-        RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-
     - name: Start Chrome Remote Desktop
       continue-on-error: true
       run: |
@@ -110,6 +72,29 @@ jobs:
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\FenixGaga\Engine\ProjectTitan.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Free Fire.lnk"
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\ninjaripper\x86\NinjaRipper.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Ninjaripper.lnk"
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\noesis\Noesis64.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Noesis.lnk"
+
+    - name: Set Desktop Wallpaper
+      run: |
+        $wallpaperPath = "C:\Users\$Env:USERNAME\Documents\wallpaper.jpg"
+        $imageUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
+
+        # Download the wallpaper
+        Invoke-WebRequest -Uri $imageUrl -OutFile $wallpaperPath
+
+        # Set the wallpaper using registry and refresh the desktop
+        function Set-Wallpaper {
+            param([string]$path)
+            Add-Type -TypeDefinition @"
+            using System;
+            using System.Runtime.InteropServices;
+            public class Wallpaper {
+                [DllImport("user32.dll", CharSet = CharSet.Auto)]
+                public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+            }
+"@
+            [Wallpaper]::SystemParametersInfo(20, 0, $path, 0x01 -bor 0x02)
+        }
+        Set-Wallpaper -path $wallpaperPath
 
     - name: Start Remote Desktop Session
       continue-on-error: true
