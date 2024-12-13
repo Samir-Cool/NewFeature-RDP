@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: Paste Chrome Remote Desktop Authentication Code
+        description: Paste Chrome Remote Desktop Code
         required: true
 
 jobs:
@@ -55,47 +55,34 @@ jobs:
           exit 1
         }
 
-    - name: Start Chrome Remote Desktop
+    - name: Set Wallpaper from Image Link
       run: |
-        $authCode = "${{ inputs.code }}"
-        $pin = "123456" # Set a 6-digit or more PIN
-        $redirectUrl = "https://remotedesktop.google.com/"
+        $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"  # Image URL
+        $wallpaperPath = "C:\Users\$Env:USERNAME\Desktop\wallpaper.jpg"
+        Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath
+        # Set the wallpaper using PowerShell
+        $RegPath = "HKCU:\Control Panel\Desktop"
+        Set-ItemProperty -Path $RegPath -Name Wallpaper -Value $wallpaperPath
+        Set-ItemProperty -Path $RegPath -Name WallpaperStyle -Value 2  # 2: Stretched
+        Set-ItemProperty -Path $RegPath -Name TileWallpaper -Value 0
 
-        $remotingPaths = @(
-            "${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe",
-            "${Env:PROGRAMFILES}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
-        )
-
-        # Find the executable path
-        foreach ($path in $remotingPaths) {
-            if (Test-Path $path) {
-                & $path --code=$authCode --redirect-url=$redirectUrl --pin=$pin
-                exit $LASTEXITCODE
-            }
+    - name: Start Chrome Remote Desktop
+      continue-on-error: true
+      run: |
+        function Start-RemoteDesktop {
+          $paths = @("${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe", "${Env:PROGRAMFILES}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe")
+          foreach ($path in $paths) {
+              if (Test-Path $path) { & $path; return }
+          }
+          Write-Host "Chrome Remote Desktop's remoting_start_host.exe not found."
         }
-
-        Write-Host "Error: remoting_start_host.exe not found. Make sure Chrome Remote Desktop is installed."
-        exit 1
+        Start-RemoteDesktop
 
     - name: Create Symbolic Links
       run: |
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\FenixGaga\Engine\ProjectTitan.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Free Fire.lnk"
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\ninjaripper\x86\NinjaRipper.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Ninjaripper.lnk"
         New-Item -ItemType SymbolicLink -Target "C:\Users\$Env:USERNAME\Documents\noesis\Noesis64.exe" -Path "C:\Users\$Env:USERNAME\Desktop\Noesis.lnk"
-
-    - name: Set Desktop Wallpaper
-      run: |
-        $wallpaperPath = "C:\Users\$Env:USERNAME\Documents\wallpaper.jpg"
-        $imageUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
-
-        # Download the wallpaper
-        Invoke-WebRequest -Uri $imageUrl -OutFile $wallpaperPath
-
-        # Set the wallpaper using the registry
-        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name Wallpaper -Value $wallpaperPath
-
-        # Refresh the desktop to apply the wallpaper
-        RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters
 
     - name: Start Remote Desktop Session
       continue-on-error: true
