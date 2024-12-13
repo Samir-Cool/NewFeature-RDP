@@ -58,7 +58,7 @@ jobs:
     - name: Set Wallpaper from Image Link
       run: |
         $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"  # Image URL
-        $wallpaperPath = "C:\Users\$Env:USERNAME\Desktop\20241214-020008.jpg"
+        $wallpaperPath = "C:\Users\runneradmin\Desktop\20241214-020008.jpg"
         Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath
         # Set the wallpaper using PowerShell
         $RegPath = "HKCU:\Control Panel\Desktop"
