@@ -66,14 +66,25 @@ jobs:
         
         # Delete the old wallpaper file if it exists
         if (Test-Path $localPath) {
-          Remove-Item $localPath -Force
+            Write-Host "Removing existing wallpaper file..."
+            Remove-Item $localPath -Force
         }
 
         # Download the wallpaper image
+        Write-Host "Downloading wallpaper image from $wallpaperUrl..."
         Invoke-WebRequest -Uri $wallpaperUrl -OutFile $localPath
+
+        # Check if the image file exists
+        if (Test-Path $localPath) {
+            Write-Host "Wallpaper downloaded successfully: $localPath"
+        } else {
+            Write-Host "Failed to download wallpaper."
+            exit 1
+        }
 
         # Set the wallpaper using registry settings
         $regPath = "HKCU:\Control Panel\Desktop"
+        Write-Host "Setting wallpaper..."
         Set-ItemProperty -Path $regPath -Name "Wallpaper" -Value $localPath
         Set-ItemProperty -Path $regPath -Name "WallpaperStyle" -Value 10  # 10 = Fill
         Set-ItemProperty -Path $regPath -Name "TileWallpaper" -Value 0
