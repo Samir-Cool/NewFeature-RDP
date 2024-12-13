@@ -57,9 +57,14 @@ jobs:
 
     - name: Set Wallpaper from URL
       run: |
-        $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
+        $wallpaperUrl = "https://example.com/path/to/your/image.jpg"
         $localPath = "$env:USERPROFILE\Pictures\wallpaper.jpg"
         
+        # Delete the old wallpaper file if it exists
+        if (Test-Path $localPath) {
+          Remove-Item $localPath -Force
+        }
+
         # Download the wallpaper image
         Invoke-WebRequest -Uri $wallpaperUrl -OutFile $localPath
 
