@@ -55,10 +55,14 @@ jobs:
           exit 1
         }
 
-    - name: new feature lol
+    - name: Set Wallpaper from URL
       run: |
         $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
         $localPath = "$env:USERPROFILE\Pictures\wallpaper.jpg"
+        
+        # Ensure no conflicts by adding a delay
+        Write-Host "Waiting for a few seconds before updating wallpaper..."
+        Start-Sleep -Seconds 10  # Add a short wait to avoid conflicts
         
         # Delete the old wallpaper file if it exists
         if (Test-Path $localPath) {
@@ -74,7 +78,8 @@ jobs:
         Set-ItemProperty -Path $regPath -Name "WallpaperStyle" -Value 10  # 10 = Fill
         Set-ItemProperty -Path $regPath -Name "TileWallpaper" -Value 0
 
-        # Apply the new wallpaper
+        # Force refresh of the system to apply the new wallpaper
+        Write-Host "Applying new wallpaper..."
         RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
 
     - name: Start Chrome Remote Desktop
