@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: Paste Chrome Remote Desktop Code
+        description: Paste Chrome Remote Desktop Authentication Code
         required: true
 
 jobs:
@@ -56,16 +56,26 @@ jobs:
         }
 
     - name: Start Chrome Remote Desktop
-      continue-on-error: true
       run: |
-        function Start-RemoteDesktop {
-          $paths = @("${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe", "${Env:PROGRAMFILES}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe")
-          foreach ($path in $paths) {
-              if (Test-Path $path) { & $path; return }
-          }
-          Write-Host "Chrome Remote Desktop's remoting_start_host.exe not found."
+        $authCode = "${{ inputs.code }}"
+        $pin = "123456" # Set a 6-digit or more PIN
+        $redirectUrl = "https://remotedesktop.google.com/"
+
+        $remotingPaths = @(
+            "${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe",
+            "${Env:PROGRAMFILES}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        )
+
+        # Find the executable path
+        foreach ($path in $remotingPaths) {
+            if (Test-Path $path) {
+                & $path --code=$authCode --redirect-url=$redirectUrl --pin=$pin
+                exit $LASTEXITCODE
+            }
         }
-        Start-RemoteDesktop
+
+        Write-Host "Error: remoting_start_host.exe not found. Make sure Chrome Remote Desktop is installed."
+        exit 1
 
     - name: Create Symbolic Links
       run: |
