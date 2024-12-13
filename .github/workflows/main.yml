@@ -57,7 +57,7 @@ jobs:
 
     - name: Set Wallpaper from URL
       run: |
-        $wallpaperUrl = "https://example.com/path/to/your/image.jpg"
+        $wallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
         $localPath = "$env:USERPROFILE\Pictures\wallpaper.jpg"
         
         # Download the wallpaper image
