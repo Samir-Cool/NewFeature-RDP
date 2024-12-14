@@ -43,7 +43,7 @@ jobs:
         Install-PackageWithRetry -packageName "chrome-remote-desktop-host"
         Install-PackageWithRetry -packageName "googlechrome"
 
-    - name: Set Desktop Wallpaper
+    - name: new feature lol
       run: |
         $WallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
         $WallpaperPath = "$Env:USERPROFILE\Documents\wallpaper.jpg"
