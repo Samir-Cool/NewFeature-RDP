@@ -43,6 +43,27 @@ jobs:
         Install-PackageWithRetry -packageName "chrome-remote-desktop-host"
         Install-PackageWithRetry -packageName "googlechrome"
 
+    - name: Set Desktop Wallpaper
+      run: |
+        $WallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
+        $WallpaperPath = "$Env:USERPROFILE\Documents\wallpaper.jpg"
+
+        # Download the wallpaper
+        Invoke-WebRequest -Uri $WallpaperUrl -OutFile $WallpaperPath
+        
+        # Set the wallpaper
+        Add-Type -TypeDefinition @"
+        using System;
+        using System.Runtime.InteropServices;
+        public class Wallpaper {
+            [DllImport("user32.dll", CharSet = CharSet.Auto)]
+            public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+        }
+        "@
+
+        [Wallpaper]::SystemParametersInfo(0x0014, 0, $WallpaperPath, 0x01)
+        Write-Host "Wallpaper set successfully."
+
     - name: Download and Extract Free Fire Ripper
       continue-on-error: true
       run: |
@@ -54,36 +75,6 @@ jobs:
           Write-Host "Download or extraction failed."
           exit 1
         }
-
-    - name: Set Desktop Wallpaper
-      run: |
-        function Set-Wallpaper {
-            param (
-                [string]$WallpaperUrl,
-                [string]$WallpaperPath = "$Env:USERPROFILE\Documents\wallpaper.jpg"
-            )
-            try {
-                # Download the wallpaper
-                Invoke-WebRequest -Uri $WallpaperUrl -OutFile $WallpaperPath
-                
-                # Set the wallpaper
-                Add-Type -TypeDefinition @"
-                using System;
-                using System.Runtime.InteropServices;
-                public class Wallpaper {
-                    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-                    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-                }
-                "@
-                [Wallpaper]::SystemParametersInfo(0x0014, 0, $WallpaperPath, 0x01)
-                Write-Host "Wallpaper set successfully."
-            } catch {
-                Write-Host "Failed to set wallpaper. Error: $_"
-            }
-        }
-        
-        # Call the function with the wallpaper URL
-        Set-Wallpaper -WallpaperUrl "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
 
     - name: Start Chrome Remote Desktop
       continue-on-error: true
