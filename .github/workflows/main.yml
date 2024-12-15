@@ -45,8 +45,8 @@ jobs:
 
     - name: new feature lol
       run: |
-        $WallpaperUrl = "https://i.ibb.co/7QBjY1q/20241214-020008.jpg"
-        $WallpaperPath = "$Env:USERPROFILE\Documents\wallpaper.jpg"
+        $WallpaperUrl = "https://i.ibb.co.com/TqVysJY/img-6.webp"
+        $WallpaperPath = "$Env:USERPROFILE\Download\Wallapaper.webp"
 
         # Download the wallpaper
         Invoke-WebRequest -Uri $WallpaperUrl -OutFile $WallpaperPath
